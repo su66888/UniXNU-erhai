@@ -45,7 +45,7 @@ defconfig = "erhai_defconfig"
 # so source_only must stay false: export_source() refuses to run alongside
 # [kernel.prelink], and a source-only kernel has __PRELINK_TEXT size 0 and no
 # Apple drivers at all — it can reach the platform expert and nothing further.
-source_only = false
+source_only = true
 # Ordering follows UniXNU-sheng/board.toml. build-boot-progress.py is what puts
 # the S1..S6 screen checkpoints in; without it CONFIG_XNU_BOOT_PROGRESS=y is a
 # no-op and a silent hang looks identical to "the kernel never started".
@@ -74,50 +74,13 @@ archives = [
 #   com.apple.security.sandbox             (sandbox)
 # None is needed for the video console: that is XNU's own pexpert console,
 # drawn straight into the framebuffer DarwinBoot fills from the UEFI GOP.
-[kernel.prelink]
-tool = "kits/NativePrelink/emit_prelink.py"
-kernel = "build/xnu/ios-obj/DEVELOPMENT_ARM64_BCM2837/mach.development.bcm2837.unstripped.noctf"
-kernelcache_sha256 = "f18b4df865405f2a287b84977d7aca745e056d656d9fc9df1662970ce2969de7"
-slide = "-0x1000000"
-# No early_security_init on this board. That entry runs the original
-# AppleMobileFileIntegrity initializer; XNU only calls an early security
-# initializer when the prelink metadata names one, so dropping it keeps the
-# AMFI path off entirely. dada does the same for the same reason.
-roots = [
-  "com.apple.AppleFSCompression.AppleFSCompressionTypeZlib",
-  "com.apple.driver.AppleARMPlatform",
-  "com.apple.driver.AppleARMWatchdogTimer",
-  "com.apple.driver.AppleAudioClockLibs",
-  "com.apple.driver.AppleEffaceableStorage",
-  "com.apple.driver.AppleIISController",
-  "com.apple.driver.AppleM2ScalerCSCDriver",
-  # AMFI and its policy manager are deliberately absent; see the note above.
-  "com.apple.driver.IODARTFamily",
-  "com.apple.filesystems.apfs",
-  "com.apple.iokit.CoreAnalyticsFamily",
-  "com.apple.iokit.IOAVFamily",
-  "com.apple.iokit.IOAudio2Family",
-  "com.apple.iokit.IOCECFamily",
-  "com.apple.iokit.IOCryptoAcceleratorFamily",
-  "com.apple.iokit.IOHDCPFamily",
-  "com.apple.iokit.IOReportFamily",
-  "com.apple.iokit.IOSlowAdaptiveClockingFamily",
-  "com.apple.iokit.IOStorageFamily",
-  "com.apple.iokit.IOSurface",
-  "com.apple.kec.Libm",
-  "com.apple.kec.corecrypto",
-  "com.apple.kext.AppleMatch",
-  "com.apple.kext.CoreTrust",
-  "com.apple.security.AppleImage4",
-]
-
 [payload]
 volume = "ERHAIESP"
 # A prelinked source kernel is ~67 MiB, and the ADT adds ~11 KiB. 192 MiB is the
 # next power-of-two-ish step that leaves room for a Data seed later, and still
 # sits inside the decompressed region this board's ABL has been booting from.
 # The packer reports the exact requirement if this ever becomes too small.
-size_mib = 192
+size_mib = 16
 loader = "firmware"
 title = "OnePlus Pad 2 Pro: iPad7,1 bring-up"
 # sheng records 0x80000000 as the SMEM RAM-table value on SM8550 hardware and
