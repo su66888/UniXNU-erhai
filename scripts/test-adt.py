@@ -64,9 +64,11 @@ class AdtTest(unittest.TestCase):
         chosen = nodes[root + '/chosen']
         self.assertEqual(chosen['random-seed'], SEED)
         self.assertEqual(struct.unpack('<Q', chosen['darwinboot-memory-size']), (OWNED,))
-        # Zero placeholders: DarwinBoot writes what it actually owns.
-        self.assertEqual(chosen['dram-base'], bytes(8))
-        self.assertEqual(chosen['dram-size'], bytes(8))
+        # Real DRAM: XNU's physmap and pmap_map_bd read gDramBase/gDramSize, so
+        # the tree publishes the hardware values instead of zero placeholders
+        # (a DarwinBoot-owned window would leave the framebuffer unmapped).
+        self.assertEqual(chosen['dram-base'], struct.pack('<Q', adt.DRAM_BASE))
+        self.assertEqual(chosen['dram-size'], struct.pack('<Q', 0x10000000))
         self.assertEqual(chosen['crypto-hash-method'], b'sha2-384\0')
         self.assertEqual(list(nodes[root + '/chosen/memory-map']), ['name'])
         # One core by default, no psci without a second one.
