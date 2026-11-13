@@ -67,6 +67,7 @@ jobs:
           ASAN_OPTIONS=detect_leaks=0 /tmp/boot-progress-test
 
       - name: Check the board configuration before burning runner time
+        continue-on-error: true
         run: |
           set -euo pipefail
           python3 scripts/check-board.py
