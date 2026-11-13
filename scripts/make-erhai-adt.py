@@ -141,9 +141,13 @@ def make_tree(memory_size, random_seed, *, dram_size=0x10000000,
         chosen += [('ephemeral-storage', struct.pack('<I', 1))]
     if memory_size:
         chosen += [('darwinboot-memory-size', struct.pack('<Q', memory_size))]
-    # Zero placeholders: DarwinBoot writes the address/size it actually owns, so
-    # XNU only ever sees RAM this boot controls.
-    chosen += [('dram-base', bytes(8)), ('dram-size', bytes(8))]
+    # Real DRAM instead of zero placeholders. XNU's physmap and pmap_map_bd use
+    # gDramBase/gDramSize; a window that starts at the Mu Kernel reservation
+    # (0xA8000000, 256 MiB) leaves every address below it -- including the GOP
+    # framebuffer at 0xFC800000 -- outside the physmap, and pmap_map_bd panics
+    # with a bare "pmap_map_bd" on the first pmap_pte() that misses.
+    chosen += [('dram-base', struct.pack('<Q', DRAM_BASE)),
+               ('dram-size', struct.pack('<Q', dram_size))]
     chosen += [('crypto-hash-method', b'sha2-384\0')]
     if root_match_volume_uuid:
         chosen += [('root-matching', ('<dict><key>IOProviderClass</key><string>IOMedia</string>'
