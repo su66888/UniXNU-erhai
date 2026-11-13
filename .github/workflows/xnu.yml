@@ -92,17 +92,17 @@ jobs:
             | tee out/erhai/logs/actions-fetch.log
           cp unixnu.lock out/erhai/unixnu.lock
 
-      - name: Link corecrypto in the bootstrap kernel too
+      - name: Keep crypto out of the bootstrap pass (archives are built later)
         run: |
           set -euo pipefail
           f="$UNIXNU_TREE/scripts/build-xnu-4k-baseline.sh"
           python3 - "$f" <<'PY'
           import sys, pathlib
           p = pathlib.Path(sys.argv[1]); s = p.read_text()
-          old = 'if [ "${XNU_SOURCE_CORECRYPTO14:-0}" = 1 ] && [ "$BOOTSTRAP" = 0 ]; then'
-          new = 'if [ "${XNU_SOURCE_CORECRYPTO14:-0}" = 1 ]; then'
+          old = 'if [ "$CRYPTO_BOOTSTRAP_MODE" = prelinked ]; then'
+          new = 'if [ "$CRYPTO_BOOTSTRAP_MODE" = prelinked ] || [ "$BOOTSTRAP" = 1 ]; then'
           if old not in s:
-              print('anchor already patched or moved; leaving file untouched')
+              print('anchor already patched or moved; leaving untouched')
           else:
               p.write_text(s.replace(old, new, 1))
               print('patched bootstrap corecrypto link in', p)
