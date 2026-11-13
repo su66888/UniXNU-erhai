@@ -107,6 +107,22 @@ jobs:
               p.write_text(s.replace(old, new, 1))
               print('patched bootstrap corecrypto link in', p)
           PY
+      - name: Instrument the pmap_map_bd panic
+        run: |
+          set -euo pipefail
+          f=$(find . -path '*osfmk/arm*/pmap/pmap.c' | head -n1)
+          echo "instrumenting $f"
+          python3 - "$f" <<'PY'
+          import sys
+          p = sys.argv[1]
+          s = open(p).read()
+          old = 'panic("pmap_map_bd");'
+          new = 'panic("pmap_map_bd: virt 0x%lx pa 0x%lx-0x%lx", vaddr, start, end);'
+          assert old in s, "panic site not found"
+          open(p, "w").write(s.replace(old, new))
+          print("patched", p)
+          PY
+          grep -n "pmap_map_bd: virt" "$f"
       - name: Build the kernel with the Apple kexts prelinked, then the payload
         env:
           GITHUB_TOKEN: ${{ github.token }}
