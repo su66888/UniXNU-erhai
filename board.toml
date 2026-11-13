@@ -80,7 +80,7 @@ volume = "ERHAIESP"
 # next power-of-two-ish step that leaves room for a Data seed later, and still
 # sits inside the decompressed region this board's ABL has been booting from.
 # The packer reports the exact requirement if this ever becomes too small.
-size_mib = 16
+size_mib = 32
 loader = "firmware"
 title = "OnePlus Pad 2 Pro: iPad7,1 bring-up"
 # sheng records 0x80000000 as the SMEM RAM-table value on SM8550 hardware and
