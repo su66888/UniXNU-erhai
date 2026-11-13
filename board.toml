@@ -100,6 +100,9 @@ volume = "ERHAIESP"
 size_mib = 192
 loader = "firmware"
 title = "OnePlus Pad 2 Pro: iPad7,1 bring-up"
+# Adds a Tools menu entry that can export the firmware log as QR pages.
+# Without it the only observable output is what fits on the framebuffer.
+tools = true
 # sheng records 0x80000000 as the SMEM RAM-table value on SM8550 hardware and
 # the iPad7,1 kernelcache is qualified against it. Our 0x2E0000000 was the
 # Android-visible total, not the window DarwinBoot hands over, and passing a
